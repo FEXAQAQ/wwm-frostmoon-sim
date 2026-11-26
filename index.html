@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>霜催落月練習場</title>
+    <meta name="claude:viewport-fit-sides" content="cover" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;900&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div id="flash" class="hud"></div>
+
+    <details id="panel" class="hud box" open>
+      <summary>
+        <span class="eyebrow">燕雲十六聲 · 五人試劍副本練習場</span>
+        <span class="ttl">霜催落月<small>桃靨劍姬・耶律阿不里</small></span>
+      </summary>
+      <div class="fields">
+        <label
+          >練習範圍
+          <select id="mode">
+            <option value="all" selected>全程（兩隻王依序）</option>
+            <option value="A">桃靨劍姬 全程</option>
+            <option value="B">耶律阿不里 全程</option>
+          </select>
+        </label>
+        <label
+          >我的職能
+          <select id="role">
+            <option value="T">坦克（坦）</option>
+            <option value="H">補師（奶）</option>
+            <option value="D1" selected>輸出 1（輸1・監牢救人）</option>
+            <option value="D2">輸出 2（輸2）</option>
+            <option value="D3">輸出 3（輸3・狐神舞·極當鷹）</option>
+          </select>
+        </label>
+        <label class="chk"
+          ><input type="checkbox" id="hintMe" checked /> 提示我現在該站哪（金色圈＋文字）</label
+        >
+        <label class="chk"
+          ><input type="checkbox" id="autoMe" /> 自動模式：我的角色也照攻略自動跑（看示範，會標出下一個位置）</label
+        >
+        <div class="group">
+          <h3>變體（預設隨機）</h3>
+          <label
+            >被點名的人
+            <select id="targetVar">
+              <option value="rand" selected>隨機</option>
+              <option value="me">一定是我（多練被點名）</option>
+            </select>
+          </label>
+          <label
+            >黑暗階段的光亮區域
+            <select id="lightVar">
+              <option value="rand" selected>隨機</option>
+              <option value="four">中圈 4 個燈（東南西北）</option>
+              <option value="center">中央一大圈</option>
+              <option value="three">中圈 3 個燈（北東西）</option>
+            </select>
+          </label>
+          <label
+            >百戲人偶數量
+            <select id="dollVar">
+              <option value="rand" selected>隨機</option>
+              <option value="6">6 隻</option>
+              <option value="3">3 隻（數量較少的版本）</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <button id="go" type="button">開始（Enter）</button>
+      <p class="note">
+        隊伍 1 坦 1 奶 3 輸出。桃靨劍姬分明亮／黑暗兩階段，
+        黑暗階段的光亮區域有三種型態。範圍大小、時間與小怪血量為推估值。
+      </p>
+    </details>
+
+    <div id="timeline" class="hud box" hidden>
+      <h4>時間軸</h4>
+      <div id="tlList"></div>
+    </div>
+
+    <div id="cast" class="hud box" hidden>
+      <div class="castname" id="castName"></div>
+      <div class="bar"><div class="fill" id="castFill"></div></div>
+      <div id="advice"></div>
+    </div>
+
+    <div id="me" class="hud box">
+      <div id="meRole">輸出 1</div>
+      <div id="meDeb"></div>
+      <div class="rec" id="meRec">通過 0 / 嘗試 0</div>
+    </div>
+
+    <div id="acts" class="hud">
+      <button id="btnDodge" type="button">閃避<small>空白</small></button>
+      <button id="btnParry" type="button">卸勢<small>F</small></button>
+      <button id="btnSkill" type="button">技能<small>Q</small></button>
+      <button id="btnUse" type="button">互動<small>E</small></button>
+    </div>
+
+    <div id="help" class="hud box">
+      <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移動　<kbd>空白</kbd> 閃避　<kbd>F</kbd> 卸勢　<kbd>Q</kbd>
+      技能（太極／狼格擋／鷹揭露）　<kbd>E</kbd> 拿靈劍變身／狼載人　拖曳 轉視角＝瞄準　滾輪 縮放　<kbd>Enter</kbd> 開始／重來
+    </div>
+
+    <div id="banner" class="hud box intro">
+      <h2>霜催落月 練習場</h2>
+      <p>
+        桃靨劍姬：長虹貫日 → 千花綻放 → 天外飛仙 → 流光劍舞 → 黑暗階段 → 百戲人偶 → 天女散花 → 百戲人偶·巨。<br />
+        耶律阿不里：狼靈召喚 → 鷹靈召喚 → 狼神鼓 → 狐火監牢 → 狐神舞 → 狐神舞·極 → 狐火爆炎。
+      </p>
+      <p class="sub">
+        其他 4 人由 NPC 照攻略行動，你只控制自己。白圈縮到腳下（頭上出現「卸」）時按 F 卸勢；站在小怪旁邊會自動普攻。
+      </p>
+      <p class="sub">按「開始」或 Enter（空白鍵也可以開始，進行中空白鍵是閃避）。</p>
+    </div>
+
+    <div id="joy" class="hud" hidden><div id="knob"></div></div>
+    <div id="err" class="hud" hidden></div>
+
+    <script>
+      // 載入啟動檔（加時間參數，避免瀏覽器用到舊的快取）
+      {
+        const s = document.createElement('script');
+        s.src = 'js/boot.js?v=' + Date.now();
+        document.body.appendChild(s);
+      }
+    </script>
+  </body>
+</html>
